@@ -1,9 +1,7 @@
 // parser
-import * as fs from "fs";
 
-const parser = (line: string): string => {
+export const parser = (line: string): string => {
     let statement = "";
-
     if (line.includes("->") && !line.startsWith("mut")) {
         const spaceless: Array<string> = line.split(" ");
         const defmark: number = line.indexOf("->");
@@ -62,18 +60,3 @@ const parser = (line: string): string => {
         return line;
     }
 };
-let file: string = fs.readFileSync(process.argv[2], "utf-8");
-
-let built: string = "";
-file = file.replace(/#(.*)/g, "");
-file.split("\n").forEach((l) => {
-    if (!l.includes(";")) {
-        const line: string = parser(l) + ";";
-        built += line;
-    } else {
-        const line: string = parser(l);
-        built += line;
-    }
-});
-
-fs.writeFileSync(process.argv[2].split(".")[0] + ".js", built);
