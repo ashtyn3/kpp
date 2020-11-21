@@ -62,10 +62,10 @@ const parser = (line: string): string => {
         return line;
     }
 };
-const file = fs.readFileSync(process.argv[2], "utf-8");
+let file: string = fs.readFileSync(process.argv[2], "utf-8");
 
-let built = "";
-
+let built: string = "";
+file = file.replace(/#(.*)/g, "");
 file.split("\n").forEach((l) => {
     if (!l.includes(";")) {
         const line: string = parser(l) + ";";
