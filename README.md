@@ -4,8 +4,8 @@ SL provides a way to write pure lambda and convert it to functional javascript. 
 
 ## Goals for the project
 
--   [x] Support more languages to compile to (including executable binary).
--   [ ] Make a REPL environment
+-   [ ] Support more languages to compile to (including executable binary).
+-   [x] Make a REPL environment
 
 ## Syntax
 
