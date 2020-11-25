@@ -1,4 +1,4 @@
-import prompt from "prompt-sync";
+import * as prompt from "prompt-sync";
 import { parser } from "./parser";
 import * as vm from "vm";
 import { error } from "console";

@@ -2,6 +2,7 @@ import * as fs from "fs";
 import { asmParser } from "./asm-compiler";
 import { parser, parserToAsm } from "./parser";
 import { repl } from "./repl";
+import { toLang } from "./templater";
 if (process.argv[2] == "-toAsm") {
     let file: string = fs.readFileSync(process.argv[3], "utf-8");
 
@@ -14,7 +15,8 @@ if (process.argv[2] == "-toAsm") {
     fs.writeFileSync(process.argv[3].split(".")[0] + ".slm", built);
 } else if (process.argv[2] == "-asm") {
     let file: string = fs.readFileSync(process.argv[3], "utf-8");
-    console.log(asmParser(file));
+    toLang("go", asmParser(file));
+    // console.log("zoom");
 } else if (process.argv[2] == undefined) {
     while (true) {
         repl();

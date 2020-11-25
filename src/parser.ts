@@ -2,6 +2,7 @@
 
 import { parse } from "path";
 import * as crypto from "crypto";
+import { stat } from "fs";
 export const parser = (line: string): string => {
     let statement = "";
     if (line.includes("->") && !line.startsWith("mut")) {
@@ -85,14 +86,25 @@ export const parserToAsm = (line: string, scope?: string): string => {
         const keyword = line.indexOf("lam");
         const params = line.substring(keyword + 3, funcStart).trim();
         let formatParams = "";
-        params.split("").forEach((p) => {
-            formatParams += p + ",";
+        params.split("").forEach((p, num) => {
+            if (num != params.length - 1) {
+                formatParams += p + ",";
+            } else {
+                formatParams += p;
+            }
         });
         statement = statement.trim();
         const body = line.substring(funcStart + 1).trim();
+        const id = crypto.randomBytes(8).toString("hex");
         if (scope != undefined) {
-            statement += scope + ">func:" + formatParams + ":next";
-            "\n" + parserToAsm(body, scope);
+            statement +=
+                scope +
+                ">func:" +
+                formatParams +
+                ":" +
+                id +
+                "\n" +
+                parserToAsm(body, id);
         } else {
             statement += "<func:" + formatParams + "\n" + parserToAsm(body);
         }
@@ -146,9 +158,9 @@ export const parserToAsm = (line: string, scope?: string): string => {
         return statement;
     } else {
         if (scope != undefined) {
-            return scope + ">expr:" + line;
+            return scope + ">expr:" + line.trim();
         } else {
-            return "<expr:" + line;
+            return "<expr:" + line.trim();
         }
     }
 };
