@@ -12,6 +12,7 @@ interface language {
     template: template;
 }
 export const toLang = (name: string, tree: Array<slmTree>) => {
+    //@ts-ignore
     let data: language = {};
     try {
         // console.log(data);
