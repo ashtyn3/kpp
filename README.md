@@ -9,6 +9,10 @@ SL provides a way to write pure lambda and convert it to functional javascript. 
 
 ## Syntax
 
+### Modules
+```
+include ./other_file.sl
+```
 ### Variables
 
 ```
