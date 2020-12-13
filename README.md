@@ -1,6 +1,6 @@
-# Simple Lambda (SL)
+# k++ (kpp) 
 
-SL provides a way to write pure lambda and convert it to functional javascript. In the future the hope for SL is to be able to compile to more languages but at the moment only javascript is supported.
+Kpp provides a way to write pure lambda and convert it to functional javascript. In the future the hope for kpp is to be able to compile to more languages but at the moment only javascript is supported.
 
 ## Goals for the project
 
