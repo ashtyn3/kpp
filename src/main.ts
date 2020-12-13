@@ -26,15 +26,14 @@ if (process.argv[2] == "-toAsm") {
 
     let built: string = "";
     file = file.replace(/#(.*)/g, "");
+    let parsed: Array<string> = []
     file.split("\n").forEach((l) => {
-        if (!l.includes(";")) {
+        if(!parsed.includes(l)) {
             const line: string = parser(l) + ";";
             built += line;
-        } else {
-            const line: string = parser(l);
-            built += line;
         }
+        parsed.push(l)
     });
 
-    fs.writeFileSync(process.argv[2].split(".")[0] + ".js", built);
+    fs.writeFileSync(process.argv[2].split(".")[0] + ".js", built.replace(/;+/g, ";"));
 }

@@ -5,7 +5,7 @@ import * as crypto from "crypto";
 import { stat } from "fs";
 export const parser = (line: string): string => {
     let statement = "";
-    if (line.includes("->") && !line.startsWith("mut")) {
+    if (line.includes("->") && !line.startsWith("mut") && !line.startsWith("?")) {
         const spaceless: Array<string> = line.split(" ");
         const defmark: number = line.indexOf("->");
         let value: string = spaceless.join(" ").substring(defmark + 2);
@@ -31,6 +31,10 @@ export const parser = (line: string): string => {
         const body = line.substring(funcStart + 1).trim();
         statement += " " + parser(body);
         return statement;
+    } else if (line.trim().startsWith("?")) {
+        const sp = line.trim().split(/\?\s+(.*)\s*:(.*)\s*\!(.*)/).filter(g => g != '')
+        statement = `(${sp[0]}) ? ${parser(sp[1].trim())} : ${parser(sp[2].trim())}`
+        return statement
     } else if (line.trim().startsWith("(")) {
         line = line.trim();
         // /,(?![^(]*\))/
