@@ -3,6 +3,7 @@
 import { parse } from "path";
 import * as crypto from "crypto";
 import { stat } from "fs";
+import { include } from "./module" 
 export const parser = (line: string): string => {
     let statement = "";
     if (line.includes("->") && !line.startsWith("mut") && !line.startsWith("?")) {
@@ -12,6 +13,10 @@ export const parser = (line: string): string => {
         value = parser(value);
         statement += "const " + spaceless[0].trim() + " =" + value;
         return statement;
+    } else if(line.startsWith("include")) {
+        const name:string = line.split(" ")[1]
+        statement += include(name, parser)
+        return statement
     } else if (line.includes("->") && line.startsWith("mut")) {
         line = line.replace("mut", "").trim();
         const spaceless: Array<string> = line.split(" ");
