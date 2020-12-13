@@ -22,10 +22,10 @@ mut v -> 24 # v has the 24 and is a mutable variable (It can be redefined).
 
 ```
 ### Functions
-lam xy. x+y # This will return the value of x+y
-```
 
 ```
+lam xy. x+y # This will return the value of x+y
+
 add -> lam xy. x+y # Now calling the add will return x+y
 ```
 
