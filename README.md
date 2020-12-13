@@ -15,10 +15,13 @@ SL provides a way to write pure lambda and convert it to functional javascript. 
 x -> 3 # x has the value of 3 and is a constant.
 mut v -> 24 # v has the 24 and is a mutable variable (It can be redefined).
 ```
-
-### Functions
+### If statement
 
 ```
+? 8 == 9 : (print "true") ! (print "false")
+
+```
+### Functions
 lam xy. x+y # This will return the value of x+y
 ```
 
