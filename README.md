@@ -19,7 +19,6 @@ mut v -> 24 # v has the 24 and is a mutable variable (It can be redefined).
 
 ```
 ? 8 == 9 : (print "true") ! (print "false")
-
 ```
 ### Functions
 
