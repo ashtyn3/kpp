@@ -3,6 +3,7 @@ import { asmParser } from "./asm-compiler";
 import { parser, parserToAsm } from "./parser";
 import { repl } from "./repl";
 import { toLang } from "./templater";
+import { exec } from "child_process";
 if (process.argv[2] == "-toAsm") {
     let file: string = fs.readFileSync(process.argv[3], "utf-8");
 
@@ -52,5 +53,25 @@ if (process.argv[2] == "-toAsm") {
     fs.writeFileSync(
         process.argv[2].split(".")[0] + ".js",
         built.replace(/;+/g, ";")
+    );
+    const name: string = process.argv[2].split(".")[0] + ".js";
+    exec(
+        "qjsc " +
+            name +
+            " -o " +
+            process.argv[2].split(".")[0] +
+            " && rm " +
+            process.argv[2].split(".")[0] +
+            ".js",
+        (error, stdout, stderr) => {
+            if (error) {
+                console.log(`error: ${error.message}`);
+                return;
+            }
+            if (stderr) {
+                console.log(`${stderr}`);
+            }
+            console.log("successfully compiled " + process.argv[2]);
+        }
     );
 }
