@@ -67,8 +67,12 @@ export const parser = (line: string, scope?: string): any => {
             .trim()
             .split(/\?\s+(.*)\s*:(.*)\s*\!(.*)/)
             .filter((g) => g != "");
+        if (!sp[2]) {
+            statement = `(${sp[0]}) && ${parser(sp[1].trim())}`;
+            return statement;
+        }
         statement = `(${sp[0]}) ? ${parser(sp[1].trim())} : ${parser(
-            sp[2].trim()
+            sp[2]?.trim()
         )}`;
         return statement;
     } else if (line.trim().startsWith("(")) {
