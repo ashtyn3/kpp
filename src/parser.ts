@@ -1,22 +1,48 @@
 // parser
-
-import { parse } from "path";
 import * as crypto from "crypto";
-import { stat } from "fs";
-import { include } from "./module" 
-export const parser = (line: string): string => {
+import { include } from "./module";
+const toMatch = (o: string, c: string, sample: string) => {
+    let chars = sample.split("");
+    let count: number = 0;
+    for (let i = 0; i < chars.length; i++) {
+        const char = chars[i];
+        if (char == o) count++;
+        if (char == c) count--;
+        if (char == c && count == 0) {
+            return sample.substring(0 + 1, i);
+        }
+    }
+};
+
+export const parser = (line: string, scope?: string): any => {
     let statement = "";
-    if (line.includes("->") && !line.startsWith("mut") && !line.startsWith("?")) {
+    if (
+        line.includes("->") &&
+        !line.startsWith("mut") &&
+        !line.startsWith("?")
+    ) {
         const spaceless: Array<string> = line.split(" ");
         const defmark: number = line.indexOf("->");
         let value: string = spaceless.join(" ").substring(defmark + 2);
-        value = parser(value);
+        value = parser(value.trim());
         statement += "const " + spaceless[0].trim() + " =" + value;
         return statement;
-    } else if(line.startsWith("include")) {
-        const name:string = line.split(" ")[1]
-        statement += include(name, parser)
-        return statement
+    } else if (line.startsWith("include")) {
+        const name: string = line.split(" ")[1];
+        statement += include(name, parser);
+        return statement;
+    } else if (line.startsWith("[")) {
+        line = toMatch("[", "]", line);
+        let arr: string = "[";
+        line.split(",").forEach((i, index) => {
+            if (index == line.split(",").length - 1) {
+                console.log(i);
+                arr += parser(i) + "]";
+            } else {
+                arr += parser(i) + ",";
+            }
+        });
+        return arr;
     } else if (line.includes("->") && line.startsWith("mut")) {
         line = line.replace("mut", "").trim();
         const spaceless: Array<string> = line.split(" ");
@@ -37,9 +63,14 @@ export const parser = (line: string): string => {
         statement += " " + parser(body);
         return statement;
     } else if (line.trim().startsWith("?")) {
-        const sp = line.trim().split(/\?\s+(.*)\s*:(.*)\s*\!(.*)/).filter(g => g != '')
-        statement = `(${sp[0]}) ? ${parser(sp[1].trim())} : ${parser(sp[2].trim())}`
-        return statement
+        const sp = line
+            .trim()
+            .split(/\?\s+(.*)\s*:(.*)\s*\!(.*)/)
+            .filter((g) => g != "");
+        statement = `(${sp[0]}) ? ${parser(sp[1].trim())} : ${parser(
+            sp[2].trim()
+        )}`;
+        return statement;
     } else if (line.trim().startsWith("(")) {
         line = line.trim();
         // /,(?![^(]*\))/
@@ -68,6 +99,8 @@ export const parser = (line: string): string => {
             statement += "(" + parser(z) + ")";
         });
         return statement;
+    } else if (line.startsWith("block")) {
+        return "{";
     } else {
         return line;
     }
