@@ -7,9 +7,11 @@
         "postinstall": "sudo apt-get install -y build-essential gcc-multilib && git clone https://github.com/ldarren/QuickJS.git && cd QuickJS && make && sudo make install"
     },
     "dependencies": {
+        "@types/mathjs": "^6.0.9",
         "@types/node": "^14.14.9",
         "@types/prompt-sync": "^4.1.0",
         "fs": "^0.0.1-security",
+        "mathjs": "^8.1.0",
         "prompt": "^1.0.0",
         "prompt-sync": "^4.2.0",
         "vm": "^0.1.0"

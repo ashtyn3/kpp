@@ -1,6 +1,8 @@
 // parser
 import * as crypto from "crypto";
+import * as math from "mathjs/number";
 import { include } from "./module";
+import { synth } from "./synth";
 const toMatch = (o: string, c: string, sample: string) => {
     let chars = sample.split("");
     let count: number = 0;
@@ -13,20 +15,29 @@ const toMatch = (o: string, c: string, sample: string) => {
         }
     }
 };
-
-export const parser = (line: string, scope?: string): any => {
+let tempTree: any = {};
+export const parser = (line: string, scope?: string, decType?: string): any => {
     let statement = "";
     if (
         line.includes("->") &&
         !line.startsWith("mut") &&
         !line.startsWith("?")
     ) {
+        if (scope != undefined) {
+            console.log("Cannot declare variable in scope.");
+        }
         const spaceless: Array<string> = line.split(" ");
         const defmark: number = line.indexOf("->");
-        let value: string = spaceless.join(" ").substring(defmark + 2);
-        value = parser(value.trim());
-        statement += "const " + spaceless[0].trim() + " =" + value;
-        return statement;
+        let value: any = spaceless.join(" ").substring(defmark + 2);
+        value = parser(value.trim(), spaceless[0].trim(), "const");
+        // statement += "const " + spaceless[0].trim() + " =" + value;
+        return {
+            typeOf: value.typeOf,
+            decType: "const",
+            name: spaceless[0].trim(),
+            bodyType: value.bodyType,
+            body: [value],
+        };
     } else if (line.startsWith("include")) {
         const name: string = line.split(" ")[1];
         statement += include(name, parser);
@@ -47,10 +58,15 @@ export const parser = (line: string, scope?: string): any => {
         line = line.replace("mut", "").trim();
         const spaceless: Array<string> = line.split(" ");
         const defmark: number = line.indexOf("->");
-        let value: string = spaceless.join(" ").substring(defmark + 2);
+        let value: any = spaceless.join(" ").substring(defmark + 2);
         value = parser(value);
-        statement += "let " + spaceless[0].trim() + " =" + value;
-        return statement;
+        return {
+            typeOf: value.typeOf,
+            decType: "let",
+            name: spaceless[0].trim(),
+            bodyType: value.bodyType,
+            body: [value],
+        };
     } else if (line.trim().startsWith("lam")) {
         const funcStart = line.indexOf(".");
         const keyword = line.indexOf("lam");
@@ -58,10 +74,18 @@ export const parser = (line: string, scope?: string): any => {
         params.split("").forEach((p) => {
             statement += " " + p + " =>";
         });
-        statement = statement.trim();
+        //statement = statement.trim();
         const body = line.substring(funcStart + 1).trim();
-        statement += " " + parser(body);
-        return statement;
+        const val = parser(body);
+        //return statement;
+        //if (scope != undefined) {
+        return {
+            typeOf: "func",
+            params: params,
+            bodyType: val.typeOf,
+            body: [val],
+        };
+        //}
     } else if (line.trim().startsWith("?")) {
         const sp = line
             .trim()
@@ -75,16 +99,16 @@ export const parser = (line: string, scope?: string): any => {
             sp[2]?.trim()
         )}`;
         return statement;
-    } else if (line.trim().startsWith("(")) {
+    } else if (line.trim().startsWith("{")) {
         line = line.trim();
         // /,(?![^(]*\))/
         const chars: Array<string> = line.split("");
         let count: number = 0;
         let end: number = 0;
         for (let index = 0; index < chars.length; index++) {
-            if (chars[index] == ")") count--;
-            if (chars[index] == "(") count++;
-            if (chars[index] == ")" && count == 0) {
+            if (chars[index] == "}") count--;
+            if (chars[index] == "{") count++;
+            if (chars[index] == "}" && count == 0) {
                 end = index;
                 line = line.substring(1, end).trim();
             }
@@ -95,18 +119,39 @@ export const parser = (line: string, scope?: string): any => {
         let params = line.substring(line.indexOf(name) + name.length, end);
         params = params.trim();
         if (name == "print") {
-            statement = "console.log(" + parser(params) + ")";
-            return statement;
+            return {
+                typeOf: "builtin",
+                fnName: "print",
+                body: parser(params),
+            };
         }
-        params.split(/,(?![^(]*\))/).forEach((z: string) => {
-            // console.log(z);
-            statement += "(" + parser(z) + ")";
+        const p = [];
+        params.split(/,(?![^{]*\})/).forEach((z: string) => {
+            p.push(z);
         });
-        return statement;
+        return {
+            typeOf: "funcCall",
+            params: p,
+            fnName: name,
+        };
     } else if (line.startsWith("block")) {
-        return "{";
+        return {
+            typeOf: "block",
+            body: [],
+        };
     } else {
-        return line;
+        try {
+            return {
+                typeOf: "number",
+                body: [math.evaluate(line)],
+            };
+        } catch (err) {
+            if (line.trim().length != 0)
+                return {
+                    typeOf: "unknown",
+                    body: line,
+                };
+        }
     }
 };
 
@@ -183,7 +228,7 @@ export const parserToAsm = (line: string, scope?: string): string => {
                 "\n";
         } else {
             statement +=
-                ">" + "call:" + name + ":" + buffer.toString("hex") + "\n";
+                "<" + "call:" + name + ":" + buffer.toString("hex") + "\n";
         }
 
         let params = line.substring(line.indexOf(name) + name.length, end);
