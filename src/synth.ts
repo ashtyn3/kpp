@@ -63,8 +63,12 @@ export const synth = (tok: any, declared: Array<any>) => {
             paramString += synth(parser(p, numb), declared);
         });
         let True = synth(tok.body[0], declared);
-        let False = synth(tok.body[1], declared);
-        return `(${paramString}) ? ${True} : ${False}`;
+        if (tok.body[1] != undefined) {
+            let False = synth(tok.body[1], declared);
+            return `(${paramString}) ? ${True} : ${False || ""}`;
+        } else {
+            return `(${paramString}) && ${True}`;
+        }
     }
     if (tok.typeOf == "module") {
         return tok.body;

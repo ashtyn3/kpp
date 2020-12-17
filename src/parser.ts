@@ -101,11 +101,18 @@ export const parser = (line: string, numb: number, scope?: string): any => {
     } else if (line.trim().startsWith("?")) {
         const sp = line
             .trim()
-            .split(/\?\s+(.*)\s*:(.*)\s*\!(.*)/)
+            .split(/\?\s+(.*)\s*:\s*(.*)\s*\!\s*(.*)/)
             .filter((g) => g != "");
         if (!sp[2]) {
             statement = `(${sp[0]}) && ${parser(sp[1].trim(), numb)}`;
-            return statement;
+            return {
+                error: errorTemp,
+                typeOf: "cond",
+                params: sp[0].split(
+                    /\s*(!|&&|\|\|)?\s*(\S+)\s*(==|&&|!=|>|<|<=|=>)\s*(\S+)\s*(!|&&|\|\|)?\s*/
+                ),
+                body: [parser(sp[1].trim(), numb)],
+            };
         }
         statement = `(${sp[0]}) ? ${parser(sp[1].trim(), numb)} : ${parser(
             sp[2]?.trim(),
