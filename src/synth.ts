@@ -64,7 +64,6 @@ export const synth = (tok: any, declared: Array<any>) => {
         });
         let True = synth(tok.body[0], declared);
         let False = synth(tok.body[1], declared);
-        console.log(False);
         return `(${paramString}) ? ${True} : ${False}`;
     }
     if (tok.typeOf == "module") {
@@ -82,7 +81,6 @@ export const synth = (tok: any, declared: Array<any>) => {
         }
         tok.params.forEach((p: string, i: number) => {
             if (i == tok.params.length - 1) {
-                console.log(parser(p, numb));
                 params += synth(parser(p, numb), declared);
             } else {
                 params += synth(parser(p, numb), declared) + ",";

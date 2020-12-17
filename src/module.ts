@@ -6,6 +6,7 @@ export const include = (name: string, parser: Function) => {
     let built: string = "";
     file = file.replace(/#(.*)/g, "");
     let tree: Array<any> = [];
+
     file.split("\n").forEach((l, i) => {
         if (l.trim().endsWith("block") || l.trim().startsWith("|")) {
             if (l.trim().endsWith("block")) {
@@ -20,11 +21,15 @@ export const include = (name: string, parser: Function) => {
         }
     });
     tree.forEach((t: any) => {
-        built += synth(
-            t,
-            tree.filter((t: any) => t.name != undefined)
-        );
+        built +=
+            synth(
+                t,
+                tree.filter((t: any) => t.name != undefined)
+            ) + ";";
     });
 
-    return built;
+    return {
+        body: built,
+        scope: tree.filter((v: any) => v.name != undefined),
+    };
 };

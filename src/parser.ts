@@ -46,18 +46,18 @@ export const parser = (line: string, numb: number, scope?: string): any => {
         };
     } else if (line.startsWith("include")) {
         const name: string = line.split(" ")[1];
-        statement += include(name, parser);
+        const mod: any = include(name, parser);
         return {
             error: errorTemp,
             typeOf: "module",
-            body: statement,
+            body: mod.body,
+            scope: mod.scope,
         };
     } else if (line.startsWith("[")) {
         line = toMatch("[", "]", line);
         let arr: string = "[";
         line.split(",").forEach((i, index) => {
             if (index == line.split(",").length - 1) {
-                console.log(i);
                 arr += parser(i, numb) + "]";
             } else {
                 arr += parser(i, numb) + ",";

@@ -22,14 +22,19 @@ if (process.argv[2] == undefined) {
                 tree[tree.length - 1].body[0].body.push(item);
             }
         } else {
-            tree.push(parser(l, i + 1));
+            if (parser(l, i + 1).typeOf == "module") {
+                tree.push(...parser(l, i + 1).scope);
+            } else {
+                tree.push(parser(l, i + 1));
+            }
         }
     });
     tree.forEach((t: any) => {
-        built += synth(
-            t,
-            tree.filter((t: any) => t.name != undefined)
-        );
+        built +=
+            synth(
+                t,
+                tree.filter((t: any) => t.name != undefined)
+            ) + ";";
     });
 
     fs.writeFileSync(
