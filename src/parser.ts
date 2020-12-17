@@ -21,7 +21,7 @@ export const parser = (line: string, numb: number, scope?: string): any => {
         chalk.redBright("Error:") +
         chalk.blueBright(numb) +
         chalk.reset() +
-        ":";
+        ": ";
     let statement = "";
     if (
         line.includes("->") &&
