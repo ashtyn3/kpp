@@ -25,7 +25,6 @@ if (process.argv[2] == undefined) {
             tree.push(parser(l, i + 1));
         }
     });
-    console.log(tree.filter((t: any) => t.name != undefined));
     tree.forEach((t: any) => {
         built += synth(
             t,
@@ -33,7 +32,6 @@ if (process.argv[2] == undefined) {
         );
     });
 
-    console.log(built);
     fs.writeFileSync(
         process.argv[2].split(".")[0] + ".js",
         built.replace(/;+/g, ";")

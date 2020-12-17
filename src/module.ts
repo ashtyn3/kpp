@@ -1,30 +1,29 @@
 import * as fs from "fs";
+import { synth } from "./synth";
 
 export const include = (name: string, parser: Function) => {
     let file: string = fs.readFileSync(name, "utf-8");
     let built: string = "";
     file = file.replace(/#(.*)/g, "");
-    let parsed: Array<string> = [];
+    let tree: Array<any> = [];
     file.split("\n").forEach((l, i) => {
-        if (!parsed.includes(l)) {
-            if (
-                parser(l) == "{" ||
-                l.trim().startsWith("|") ||
-                l.trim().endsWith("block")
-            ) {
-                if (parser(l) == "{") {
-                    built += "{";
-                } else if (!file.split("\n")[i + 1].trim().startsWith("|")) {
-                    built += parser(l.replace("|", "")) + "};";
-                } else {
-                    built += parser(l.replace("|", "")) + "\n";
-                }
-            } else {
-                const line: string = parser(l) + ";";
-                built += line;
+        if (l.trim().endsWith("block") || l.trim().startsWith("|")) {
+            if (l.trim().endsWith("block")) {
+                tree.push(parser(l, i + 1));
             }
+            if (l.trim().startsWith("|")) {
+                const item = parser(l.replace("|", ""), i + 1);
+                tree[tree.length - 1].body[0].body.push(item);
+            }
+        } else {
+            tree.push(parser(l, i + 1));
         }
-        parsed.push(l);
+    });
+    tree.forEach((t: any) => {
+        built += synth(
+            t,
+            tree.filter((t: any) => t.name != undefined)
+        );
     });
 
     return built;
