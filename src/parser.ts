@@ -1,8 +1,9 @@
 // parser
 import * as crypto from "crypto";
+//@ts-ignore
 import * as math from "mathjs/number";
 import { include } from "./module";
-import { synth } from "./synth";
+import * as chalk from "chalk";
 const toMatch = (o: string, c: string, sample: string) => {
     let chars = sample.split("");
     let count: number = 0;
@@ -15,8 +16,12 @@ const toMatch = (o: string, c: string, sample: string) => {
         }
     }
 };
-let tempTree: any = {};
-export const parser = (line: string, scope?: string, decType?: string): any => {
+export const parser = (line: string, numb: number, scope?: string): any => {
+    const errorTemp =
+        chalk.redBright("Error:") +
+        chalk.blueBright(numb) +
+        chalk.reset() +
+        ":";
     let statement = "";
     if (
         line.includes("->") &&
@@ -29,9 +34,10 @@ export const parser = (line: string, scope?: string, decType?: string): any => {
         const spaceless: Array<string> = line.split(" ");
         const defmark: number = line.indexOf("->");
         let value: any = spaceless.join(" ").substring(defmark + 2);
-        value = parser(value.trim(), spaceless[0].trim(), "const");
+        value = parser(value.trim(), numb, spaceless[0].trim());
         // statement += "const " + spaceless[0].trim() + " =" + value;
         return {
+            error: errorTemp,
             typeOf: value.typeOf,
             decType: "const",
             name: spaceless[0].trim(),
@@ -41,16 +47,20 @@ export const parser = (line: string, scope?: string, decType?: string): any => {
     } else if (line.startsWith("include")) {
         const name: string = line.split(" ")[1];
         statement += include(name, parser);
-        return statement;
+        return {
+            error: errorTemp,
+            typeOf: "module",
+            body: statement,
+        };
     } else if (line.startsWith("[")) {
         line = toMatch("[", "]", line);
         let arr: string = "[";
         line.split(",").forEach((i, index) => {
             if (index == line.split(",").length - 1) {
                 console.log(i);
-                arr += parser(i) + "]";
+                arr += parser(i, numb) + "]";
             } else {
-                arr += parser(i) + ",";
+                arr += parser(i, numb) + ",";
             }
         });
         return arr;
@@ -59,8 +69,9 @@ export const parser = (line: string, scope?: string, decType?: string): any => {
         const spaceless: Array<string> = line.split(" ");
         const defmark: number = line.indexOf("->");
         let value: any = spaceless.join(" ").substring(defmark + 2);
-        value = parser(value);
+        value = parser(value, numb);
         return {
+            error: errorTemp,
             typeOf: value.typeOf,
             decType: "let",
             name: spaceless[0].trim(),
@@ -76,13 +87,14 @@ export const parser = (line: string, scope?: string, decType?: string): any => {
         });
         //statement = statement.trim();
         const body = line.substring(funcStart + 1).trim();
-        const val = parser(body);
+        const val = parser(body, numb);
         //return statement;
         //if (scope != undefined) {
         return {
             typeOf: "func",
             params: params,
             bodyType: val.typeOf,
+            error: errorTemp,
             body: [val],
         };
         //}
@@ -92,13 +104,21 @@ export const parser = (line: string, scope?: string, decType?: string): any => {
             .split(/\?\s+(.*)\s*:(.*)\s*\!(.*)/)
             .filter((g) => g != "");
         if (!sp[2]) {
-            statement = `(${sp[0]}) && ${parser(sp[1].trim())}`;
+            statement = `(${sp[0]}) && ${parser(sp[1].trim(), numb)}`;
             return statement;
         }
-        statement = `(${sp[0]}) ? ${parser(sp[1].trim())} : ${parser(
-            sp[2]?.trim()
+        statement = `(${sp[0]}) ? ${parser(sp[1].trim(), numb)} : ${parser(
+            sp[2]?.trim(),
+            numb
         )}`;
-        return statement;
+        return {
+            error: errorTemp,
+            typeOf: "cond",
+            params: sp[0].split(
+                /\s*(!|&&|\|\|)?\s*(\S+)\s*(==|&&|!=|>|<|<=|=>)\s*(\S+)\s*(!|&&|\|\|)?\s*/
+            ),
+            body: [parser(sp[1].trim(), numb), parser(sp[2]?.trim(), numb)],
+        };
     } else if (line.trim().startsWith("{")) {
         line = line.trim();
         // /,(?![^(]*\))/
@@ -120,34 +140,48 @@ export const parser = (line: string, scope?: string, decType?: string): any => {
         params = params.trim();
         if (name == "print") {
             return {
+                error: errorTemp,
                 typeOf: "builtin",
                 fnName: "print",
-                body: parser(params),
+                body: parser(params, numb),
             };
         }
         const p = [];
         params.split(/,(?![^{]*\})/).forEach((z: string) => {
             p.push(z);
         });
+
         return {
+            error: errorTemp,
             typeOf: "funcCall",
             params: p,
             fnName: name,
         };
     } else if (line.startsWith("block")) {
         return {
+            error: errorTemp,
             typeOf: "block",
             body: [],
         };
     } else {
         try {
-            return {
-                typeOf: "number",
-                body: [math.evaluate(line)],
-            };
+            if (line.match(/\d+/) && !line.startsWith('"')) {
+                return {
+                    error: errorTemp,
+                    typeOf: "number",
+                    body: [math.evaluate(line)],
+                };
+            } else {
+                return {
+                    error: errorTemp,
+                    typeOf: "unknown",
+                    body: line,
+                };
+            }
         } catch (err) {
             if (line.trim().length != 0)
                 return {
+                    error: errorTemp,
                     typeOf: "unknown",
                     body: line,
                 };

@@ -47,14 +47,14 @@ if (process.argv[2] == "-toAsm") {
     file.split("\n").forEach((l, i) => {
         if (l.trim().endsWith("block") || l.trim().startsWith("|")) {
             if (l.trim().endsWith("block")) {
-                tree.push(parser(l));
+                tree.push(parser(l, i + 1));
             }
             if (l.trim().startsWith("|")) {
-                const item = parser(l.replace("|", ""));
+                const item = parser(l.replace("|", ""), i + 1);
                 tree[tree.length - 1].body[0].body.push(item);
             }
         } else {
-            tree.push(parser(l));
+            tree.push(parser(l, i + 1));
         }
     });
     console.log(tree.filter((t: any) => t.name != undefined));
