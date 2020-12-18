@@ -77,6 +77,9 @@ export const synth = (tok: any, declared: Array<any>) => {
         line = "{";
         return line;
     }
+    if (tok.typeOf == "array") {
+        console.log(tok);
+    }
     if (tok.typeOf == "funcCall") {
         let params: string = ``;
         if (declared.filter((d) => d.name == tok.fnName).length == 0) {

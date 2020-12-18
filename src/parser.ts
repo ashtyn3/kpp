@@ -55,15 +55,18 @@ export const parser = (line: string, numb: number, scope?: string): any => {
         };
     } else if (line.startsWith("[")) {
         line = toMatch("[", "]", line);
-        let arr: string = "[";
+        let arr: Array<any> = [];
         line.split(",").forEach((i, index) => {
             if (index == line.split(",").length - 1) {
-                arr += parser(i, numb) + "]";
+                arr += parser(i, numb);
             } else {
-                arr += parser(i, numb) + ",";
+                arr += parser(i, numb);
             }
         });
-        return arr;
+        return {
+            typeOf: "array",
+            body: arr,
+        };
     } else if (line.includes("->") && line.startsWith("mut")) {
         line = line.replace("mut", "").trim();
         const spaceless: Array<string> = line.split(" ");
