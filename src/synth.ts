@@ -32,15 +32,13 @@ export const synth = (tok: any, declared: Array<any>) => {
         });
         declared.push(tok.name);
         return line;
-    }
-    if (tok.decType != undefined) {
+    } else if (tok.decType != undefined) {
         tok.body.forEach((t: any) => {
             line += synth(t, declared);
         });
 
         return `${tok.decType} ${tok.name} = ${line}`;
-    }
-    if (tok.typeOf == "func" && tok.decType == undefined) {
+    } else if (tok.typeOf == "func" && tok.decType == undefined) {
         tok.params.split("").forEach((p: string) => {
             line += " " + p + " => ";
         });
@@ -60,8 +58,7 @@ export const synth = (tok: any, declared: Array<any>) => {
             line += ";";
         }
         return line;
-    }
-    if (tok.typeOf == "cond") {
+    } else if (tok.typeOf == "cond") {
         let params = tok.params
             .filter((p: string) => p != undefined)
             .filter((p: string) => p.trim().length != 0);
@@ -76,18 +73,14 @@ export const synth = (tok: any, declared: Array<any>) => {
         } else {
             return `(${paramString}) && ${True}`;
         }
-    }
-    if (tok.typeOf == "module") {
+    } else if (tok.typeOf == "module") {
         return tok.body;
-    }
-    if (tok.typeOf == "block") {
+    }else if (tok.typeOf == "block") {
         line = "{";
         return line;
-    }
-    if (tok.typeOf == "array") {
+    } else if (tok.typeOf == "array") {
         console.log(tok);
-    }
-    if (tok.typeOf == "funcCall") {
+    } else if (tok.typeOf == "funcCall") {
         let params: string = ``;
         if (declared.filter((d) => d.name == tok.fnName).length == 0) {
             console.log("Undefined function " + tok.fnName);
@@ -101,12 +94,10 @@ export const synth = (tok: any, declared: Array<any>) => {
             }
         });
         return `${tok.fnName}(${params})`;
-    }
-    if (tok.typeOf == "builtin") {
+    } else if (tok.typeOf == "builtin") {
         let param: string = synth(tok.body, declared);
         return `console.log(${param})`;
-    }
-    if (tok.typeOf == "unknown") {
+    } else if (tok.typeOf == "unknown") {
         if (tok.body.match(/{(.*)}/)) {
             const funcs = tok.body.match(/{(.*)}/g);
             funcs.forEach((start: RegExpMatchArray) => {
@@ -122,15 +113,27 @@ export const synth = (tok: any, declared: Array<any>) => {
                     NewFunc
                 );
             });
-        } else if (tok.body.match(/^\w$/)) {
+        } else if (tok.body.match(/^\w+$/)) {
             if (declared.filter((v) => v.name == tok.body.trim()).length == 0) {
-                console.log(tok.body.trim() + " is undefined");
+                console.log(tok.error+tok.body.trim() + " is undefined");
                 exit();
+            }
+        } else {
+            if(tok.body.trim() != "" && !tok.body.match(/"(.*)"/)) {
+                console.log(tok.error + "unknown tokens:")
+                console.log("    "+tok.body)
+                exit()
             }
         }
         return tok.body;
-    }
-    if (tok.typeOf == "number") {
+    } else if (tok.typeOf == "number") {
         return tok.body;
+    } else {
+        if(tok.error != undefined) {
+            console.log(tok.error+"Unexpected tokens")
+        } else {
+            console.log("unexpected tokens")
+        }
+        exit()
     }
 };
