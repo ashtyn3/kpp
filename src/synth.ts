@@ -44,8 +44,15 @@ export const synth = (tok: any, declared: Array<any>) => {
         tok.params.split("").forEach((p: string) => {
             line += " " + p + " => ";
         });
+        if(tok.params.trim().length == 0) {
+            line += "() => "
+        }
         tok.body.forEach((t: any) => {
-            line += synth(t, declared).trim() + ";";
+            if(synth(t, declared).length == 1) {
+                line += synth(t, declared)[0].toString().trim() + ";";
+            } else {
+                line += synth(t, declared).trim() + ";";
+            }
         });
         if (tok.bodyType == "block") {
             line += "};";
@@ -93,7 +100,7 @@ export const synth = (tok: any, declared: Array<any>) => {
                 params += synth(parser(p, numb), declared) + ",";
             }
         });
-        return `${tok.fnName}(${params});`;
+        return `${tok.fnName}(${params})`;
     }
     if (tok.typeOf == "builtin") {
         let param: string = synth(tok.body, declared);
