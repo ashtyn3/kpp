@@ -1,0 +1,2 @@
+sqrt -> lam x. x*x
+abs -> lam x. x*((2*x+1)%2)
