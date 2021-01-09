@@ -3,6 +3,6 @@
         "target": "ESNext",
         "module": "commonjs",
         "outDir": "./dist",
-        "rootDirs": ["src/", "src/plugins/*.kpp"]
+        "rootDirs": ["src/", "src/plugins/*"]
     }
 }
