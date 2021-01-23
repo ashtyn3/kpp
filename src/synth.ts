@@ -14,9 +14,10 @@ const toMatch = (o: string, c: string, sample: string) => {
   }
 };
 
-export const synth = (tok: any, declared: Array<any>) => {
+export const synth = (tok: any, declared: Array<any>): string => {
   let line: string = "";
   let numb: number = tok.error.split(":")[2];
+
   if (tok.typeOf == "func" && tok.decType != undefined) {
     if (tok.decType != "const") {
       console.log(
@@ -32,6 +33,12 @@ export const synth = (tok: any, declared: Array<any>) => {
     });
     declared.push(tok.name);
     return line;
+  } else if (tok.decType == "redefine") {
+    tok.body.forEach((t: any) => {
+      line += synth(t, declared);
+    });
+
+    return `${tok.name} = ${line}`;
   } else if (tok.decType != undefined) {
     tok.body.forEach((t: any) => {
       line += synth(t, declared);
@@ -82,7 +89,7 @@ export const synth = (tok: any, declared: Array<any>) => {
   } else if (tok.typeOf == "funcCall") {
     let params: string = ``;
     if (declared.filter((d) => d.name == tok.fnName).length == 0) {
-      console.log("Undefined function " + tok.fnName);
+      console.log(tok.error + "Undefined function " + tok.fnName);
       exit();
     }
     tok.params.forEach((p: string, i: number) => {
@@ -128,7 +135,7 @@ export const synth = (tok: any, declared: Array<any>) => {
     ) {
       return tok.body;
     } else {
-      if (tok.body.trim() != "" && !tok.body.match(/"(.*)"/)) {
+      if (tok.body.trim() != "" && !tok.body.trim().match(/^"(.*)"/)) {
         console.log(tok.error + "unknown tokens:");
         console.log("    " + tok.body);
         exit();
@@ -145,4 +152,5 @@ export const synth = (tok: any, declared: Array<any>) => {
     }
     exit();
   }
+  return "";
 };

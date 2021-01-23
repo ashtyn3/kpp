@@ -37,6 +37,20 @@ export const parser = (line: string, numb: number, scope?: string): any => {
       bodyType: value.bodyType,
       body: [value],
     };
+  } else if (
+    line.match(/[a-zA-Z0-9]\s*=\s*(.*)/) &&
+    !line.trim().startsWith("?")
+  ) {
+    const parsed: Array<string> = line.split("=");
+    const value: any = parser(parsed[1], numb);
+    return {
+      name: parsed[0].trim(),
+      error: errorTemp,
+      decType: "redefine",
+      typeOf: value.typeOf,
+      bodyType: value.bodyType,
+      body: [value],
+    };
   } else if (line.startsWith("include")) {
     const name: string = line.split(" ")[1];
     const mod: any = include(name, parser);
