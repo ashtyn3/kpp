@@ -53,13 +53,24 @@ export const parser = (line: string, numb: number, scope?: string): any => {
     };
   } else if (line.startsWith("include")) {
     const name: string = line.split(" ")[1];
-    const mod: any = include(name, parser);
-    return {
-      error: errorTemp,
-      typeOf: "module",
-      body: mod.body,
-      scope: mod.scope,
-    };
+    if (name.match(/package\:\w+/)) {
+      const mod: any = include(name.split(":")[1], parser, true);
+      return {
+        error: errorTemp,
+        typeOf: "module",
+        decType: "stdModule",
+        body: mod.body,
+        scope: mod.scope,
+      };
+    } else {
+      const mod: any = include(name, parser, false);
+      return {
+        error: errorTemp,
+        typeOf: "module",
+        body: mod.body,
+        scope: mod.scope,
+      };
+    }
   } else if (line.startsWith("[")) {
     line = toMatch("[", "]", line);
     let arr: Array<any> = [];
@@ -163,7 +174,7 @@ export const parser = (line: string, numb: number, scope?: string): any => {
         body: parser(params, numb),
       };
     }
-    const p = [];
+    const p: Array<string> = [];
     params.split(/,(?![^{]*\})/).forEach((z: string) => {
       p.push(z);
     });

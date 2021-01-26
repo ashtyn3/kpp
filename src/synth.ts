@@ -17,7 +17,6 @@ const toMatch = (o: string, c: string, sample: string) => {
 export const synth = (tok: any, declared: Array<any>): string => {
   let line: string = "";
   let numb: number = tok.error.split(":")[2];
-
   if (tok.typeOf == "func" && tok.decType != undefined) {
     if (tok.decType != "const") {
       console.log(
@@ -33,6 +32,8 @@ export const synth = (tok: any, declared: Array<any>): string => {
     });
     declared.push(tok.name);
     return line;
+  } else if (tok.typeOf == "native") {
+    return tok.body;
   } else if (tok.decType == "redefine") {
     tok.body.forEach((t: any) => {
       line += synth(t, declared);
