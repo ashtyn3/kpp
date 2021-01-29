@@ -2,6 +2,7 @@ import * as fs from "fs";
 import { parser } from "./parser";
 import { exec } from "child_process";
 import { synth } from "./synth";
+import * as chalk from "chalk";
 if (process.argv[2] == undefined) {
   //    while (true) {
   //        repl();
@@ -13,11 +14,16 @@ if (process.argv[2] == undefined) {
   file = file.replace(/#(.*)/g, "");
   let tree: Array<any> = [];
   file.split("\n").forEach((l, i) => {
+    const errorTemp = chalk.redBright("Error:") + chalk.blueBright(i+1) + chalk.reset() + ": "; 
     if (l.trim().endsWith("block") || l.trim().startsWith("|")) {
       if (l.trim().endsWith("block")) {
         tree.push(parser(l, i + 1));
       }
       if (l.trim().startsWith("|")) {
+          if(tree[tree.length - 1].name == undefined) {
+              console.log(errorTemp + "Cannot create block statement in non block scope.\n\t"+l.replace("|", chalk.redBright(chalk.bold("|"))))
+              process.exit()
+          }
         const item = parser(l.replace("|", ""), i + 1);
         tree[tree.length - 1].body[0].body.push(item);
       }

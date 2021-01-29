@@ -3,3 +3,4 @@ node_modules/
 *.sl
 *.slm
 package-lock.json
+*.lock
